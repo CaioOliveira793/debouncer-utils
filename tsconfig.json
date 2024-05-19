@@ -57,12 +57,11 @@
 	"include": [
 		"src/**/*",
 		"test/**/*",
-		"rollup/*"
+		"rollup.config.js"
 	],
 	"exclude": [
 		"node_modules/**",
 		"dist/**",
-		"test-build/**",
 		"coverage/**"
 	]
 }
