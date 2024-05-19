@@ -29,9 +29,7 @@ export class DebouncerAbortError<R = unknown> extends Error {
  * 	});
  * ```
  */
-export function resolveAbortError<Err = unknown, R = unknown>(
-	error: Err
-): DebouncerAbortError<R> {
+export function resolveAbortError<Err = unknown, R = unknown>(error: Err): DebouncerAbortError<R> {
 	if (error instanceof DebouncerAbortError) {
 		return error;
 	}

@@ -76,12 +76,13 @@ Clone the git repo and install with [pnpm](https://pnpm.io/).
 
 ### Test
 
-<!-- TODO: add tests -->
-<!-- TODO: testing -->
+To run the tests, use the package script `test` or `test --coverage` for code coverage.
+
+See more options in the [jest CLI options](https://jestjs.io/docs/cli)
 
 ### Build
 
-To build the js files, run `build:js` and `build:type` for typescript declaration files.
+To build js files, run `build:js` and `build:type` for typescript declaration files.
 
 For a full build (`.d.ts`, `.js`), run the build script.
 
