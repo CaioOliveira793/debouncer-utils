@@ -1,17 +1,17 @@
-import { readFileSync } from 'node:fs';
+// import { readFileSync } from 'node:fs';
+import type { RollupOptions } from 'rollup';
 import typescript from '@rollup/plugin-typescript';
 
-const packageJson = JSON.parse(readFileSync('package.json', { encoding: 'utf-8' }));
-const peerDependencies = Object.keys(packageJson.peerDependencies ?? {});
+import packageJson from './package.json' assert { type: 'json' };
 
-/** @type {import('rollup').RollupOptions} */
-export default {
+const config: RollupOptions = {
 	input: packageJson.source,
-	external: peerDependencies,
+	external: [], // Object.keys(packageJson.peerDependencies)
 	plugins: [
 		typescript({
 			include: ['src/**/*.ts'],
 			declaration: false,
+			sourceMap: true,
 		}),
 	],
 	output: [
@@ -27,3 +27,5 @@ export default {
 		},
 	],
 };
+
+export default config;

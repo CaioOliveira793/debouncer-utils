@@ -1,4 +1,6 @@
+import type { Config } from 'jest';
 import { pathsToModuleNameMapper } from 'ts-jest';
+
 // error TS2821: Import assertions are only supported when the '--module' option is set to 'esnext' or 'nodenext'.
 // import { compilerOptions } from './tsconfig.json' assert { type: 'json' };
 
@@ -8,10 +10,8 @@ const { compilerOptions } = JSON.parse(readFileSync('./tsconfig.json', { encodin
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * @see https://jestjs.io/docs/configuration
- *
- * @type {import('jest').Config}
  */
-const config = {
+const config: Config = {
 	// All imported modules in your tests should be mocked automatically
 	// automock: false,
 
