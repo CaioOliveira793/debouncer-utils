@@ -1,11 +1,10 @@
-import { DebouncerAbortError, resolveDebouncerAbort } from '@/AbortError';
+import { DebouncerAbortError, resolveAbortError } from '@/AbortError';
 import { PromiseObj, makePromiseObj } from '@/util/Promise';
 
 export interface Func<This, Args extends Array<unknown>, Return> {
 	(this: This, ...args: Args): Return;
 }
 
-// NOTE: take into account the calling context e.g. this
 export class Debouncer<Args extends Array<unknown>, T> {
 	/**
 	 * Delay (in milliseconds)
@@ -46,16 +45,25 @@ export class Debouncer<Args extends Array<unknown>, T> {
 		try {
 			return await this.exec(...args);
 		} catch (error) {
-			return resolveDebouncerAbort(error);
+			return resolveAbortError(error);
 		}
 	}
 
 	public ready(value: T): void {
 		clearTimeout(this.timeoutID);
-		this.promiseObj?.resolve(value as Awaited<T>);
-		this.clear();
+		try {
+			this.promiseObj?.resolve(value as Awaited<T>);
+		} finally {
+			this.clear();
+		}
 	}
 
+	/**
+	 * @description Flush any pending operation immediately.
+	 *
+	 * ---
+	 * @returns {T | void} returned value
+	 */
 	public flush(): T | void {
 		clearTimeout(this.timeoutID);
 		try {

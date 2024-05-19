@@ -7,27 +7,29 @@ export class DebouncerAbortError<R = unknown> extends Error {
 	}
 }
 
-// TODO: rename to resolveAbort(Error?)
 /**
  * @template Err
+ * @template R
+ * ---
+ * @description Resolve debouncer abort error.
  *
  * Return the error if it is a debouncer abort error and throw it otherwise.
  *
  * ---
  * @param {Err} error unknown error
- * @returns {DebouncerAbortError} debouncer abort error
+ * @returns {DebouncerAbortError<R>} debouncer abort error
  * @throws {Err} unknown error that is not a debouncer abort error.
  * ---
  * @example
  * ```
  * const result: T | DebouncerAbortError = await debouncer.exec()
- * 	.catch(resolveDebouncerAbort)
+ * 	.catch(resolveAbortError)
  * 	.catch(err => {
  * 		// handle some other error ...
  * 	});
  * ```
  */
-export function resolveDebouncerAbort<Err = unknown, R = unknown>(
+export function resolveAbortError<Err = unknown, R = unknown>(
 	error: Err
 ): DebouncerAbortError<R> {
 	if (error instanceof DebouncerAbortError) {
