@@ -1,13 +1,9 @@
 import { type PromiseObj, makePromiseObj } from '@/util/Promise';
 import type { CallbackContext, Func } from '@/Type';
 
-function makeCallbackContext(controller: AbortController): CallbackContext {
-	return { signal: controller.signal };
-}
+export type OperationFn<T> = Func<DebounceInternals<T>, [], Promise<T>>;
 
-export type OperationFn<T> = Func<DebouncerState<T>, [], Promise<T>>;
-
-export interface DebouncerState<T> {
+export interface DebounceInternals<T> {
 	running: boolean;
 	operationFn: OperationFn<T>;
 	operation: PromiseObj<Awaited<T>>;
@@ -15,11 +11,11 @@ export interface DebouncerState<T> {
 	timeoutID: number;
 }
 
-export function initialDebouncerState<T, Args extends Array<unknown>>(
+export function makeDebounceInternals<T, Args extends Array<unknown>>(
 	callback: Func<CallbackContext, Args, T>,
 	...args: Args
-): DebouncerState<T> {
-	const state: DebouncerState<T> = {
+): DebounceInternals<T> {
+	const state: DebounceInternals<T> = {
 		timeoutID: 0,
 		controller: new AbortController(),
 		running: false,
@@ -27,7 +23,7 @@ export function initialDebouncerState<T, Args extends Array<unknown>>(
 		operationFn: async () => {
 			try {
 				state.running = true;
-				return await callback.call(makeCallbackContext(state.controller), ...args);
+				return await callback.call({ signal: state.controller.signal }, ...args);
 			} finally {
 				state.running = false;
 			}
@@ -38,14 +34,14 @@ export function initialDebouncerState<T, Args extends Array<unknown>>(
 }
 
 export function updateOperationFn<T, Args extends Array<unknown>>(
-	state: DebouncerState<T>,
+	state: DebounceInternals<T>,
 	callback: Func<CallbackContext, Args, T>,
 	...args: Args
 ) {
 	state.operationFn = async () => {
 		try {
 			state.running = true;
-			return await callback.call(makeCallbackContext(state.controller), ...args);
+			return await callback.call({ signal: state.controller.signal }, ...args);
 		} finally {
 			state.running = false;
 		}

@@ -1,6 +1,6 @@
 # Debouncer utils
 
-Operation debouncer utility
+Operation debounce utility
 
 ## Features
 
@@ -23,20 +23,20 @@ const value = await debounce.exec(arg1, arg2);
 ### Promises
 
 ```ts
-const debouncer = new Debouncer(async () => 'success', 1_000);
+const debounce = new Debouncer(async () => 'success', 1_000);
 
 // after 1 second ...
-const value = await debouncer.exec();
+const value = await debounce.exec();
 
 assert.strictEqual(value, 'success');
 ```
 
 
 ```ts
-const debouncer = new Debouncer(async () => 'first', 1_500);
+const debounce = new Debouncer(async () => 'first', 1_500);
 
 // after 1.5 seconds ...
-const values = await Promise.all(debouncer.exec(), Promise.resolve('second'));
+const values = await Promise.all(debounce.exec(), Promise.resolve('second'));
 
 assert.strictEqual(values, ['first', 'second']);
 ```
@@ -47,7 +47,7 @@ assert.strictEqual(values, ['first', 'second']);
 const value = await debounce.execSafeAbort(arg1, arg2);
 
 // Abort pending operation
-debouncer.abort();
+debounce.abort();
 ```
 
 ### Debounce operation control
@@ -57,7 +57,7 @@ async function func() {
 	const value = await debounce.exec(arg1, arg2);
 }
 
-debouncer.ready(value);
+debounce.ready(value);
 ```
 
 ```ts
@@ -66,7 +66,7 @@ async function func() {
 }
 
 function resolveImmediate() {
-	debouncer.flush();
+	debounce.flush();
 }
 ```
 

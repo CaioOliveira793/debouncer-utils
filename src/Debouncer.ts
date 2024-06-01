@@ -2,13 +2,14 @@ import type {
 	CallbackContext,
 	Func,
 	DebounceResult,
-	ReadyDebounceAction,
-	DebounceFlushResult,
-	CancelDebounceAction,
-	AbortDebounceAction,
+	ReadyAction,
+	FlushResult,
+	CancelAction,
+	AbortAction,
+	DebounceState,
 } from '@/Type';
-import { DebouncerAbortError } from '@/AbortError';
-import { initialDebouncerState, updateOperationFn, type DebouncerState } from '@/State';
+import { DebounceAbortError } from '@/AbortError';
+import { makeDebounceInternals, updateOperationFn, type DebounceInternals } from '@/State';
 
 export class Debouncer<Args extends Array<unknown>, T> {
 	/**
@@ -69,6 +70,30 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * This function will **immediately return** a promise to be awaited for a fulfilment or
 	 * rejection of the {@link callback} execution.
 	 *
+	 * ## Debounce behavior
+	 *
+	 * This function can have 3 behaviors depending of the {@link DebounceState debounce state}
+	 *
+	 * ### `idle`
+	 *
+	 * Calling {@link exec} when the debounce is **idle** will schedule a new execution
+	 * of the callback with the specified arguments. This will transition the
+	 * {@link DebounceState debounce state} to `pending`.
+	 *
+	 * ### `pending`
+	 *
+	 * Running the {@link exec} in a `pending` state will cancel the scheduled operation
+	 * and schedule a new execution of the callback with the current arguments. This will
+	 * **not transition** the {@link DebounceState debounce state}.
+	 *
+	 * ### `running`
+	 *
+	 * When {@link exec} is called with a `running` {@link DebounceState state}, the operation
+	 * already running will be prioritized, meaning that the current {@link exec} call will not
+	 * be scheduled.
+	 *
+	 * The returned promise will be the same from the previous {@link callback} execution.
+	 *
 	 * ## Safety
 	 *
 	 * Is **strongly advised** to await this promise, since aborted operations or any exception
@@ -81,7 +106,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * ---
 	 * @param {...Args} args callback arguments.
 	 * @returns {Promise<Awaited<T>>} promise of the callback execution.
-	 * @throws {unknown} {@link DebouncerAbortError debouncer abort error} or any error thrown by the {@link callback} function.
+	 * @throws a {@link DebounceAbortError debouncer abort error} or any error thrown by the {@link callback} function.
 	 *
 	 * ---
 	 * @example
@@ -95,27 +120,23 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * ```
 	 */
 	public execUnsafe(...args: Args): Promise<Awaited<T>> {
-		// TODO: document what happens if a operation was previously started and:
-		// - it is running: the current execution is used
-		// XOR
-		// - is not running: cancel the previous and schedule a new execution.
-		if (this.state?.running) {
-			return this.state.operation.promise;
+		if (this.internals?.running) {
+			return this.internals.operation.promise;
 		}
 
-		if (!this.state) {
-			this.state = initialDebouncerState(this.callback, ...args);
-			this.state.timeoutID = setTimeout(this.makeTimeoutFn(), this.delay) as unknown as number;
+		if (!this.internals) {
+			this.internals = makeDebounceInternals(this.callback, ...args);
+			this.internals.timeoutID = setTimeout(this.makeTimeoutFn(), this.delay) as unknown as number;
 
-			return this.state.operation.promise;
+			return this.internals.operation.promise;
 		}
 
-		clearTimeout(this.state.timeoutID);
-		updateOperationFn(this.state, this.callback, ...args);
+		clearTimeout(this.internals.timeoutID);
+		updateOperationFn(this.internals, this.callback, ...args);
 
-		this.state.timeoutID = setTimeout(this.makeTimeoutFn(), this.delay) as unknown as number;
+		this.internals.timeoutID = setTimeout(this.makeTimeoutFn(), this.delay) as unknown as number;
 
-		return this.state.operation.promise;
+		return this.internals.operation.promise;
 	}
 
 	/**
@@ -125,6 +146,30 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * @description
 	 * This function **immediately returns** a promise that will resolve into a
 	 * {@link DebounceResult safe result} of the {@link callback} execution.
+	 *
+	 * ## Debounce behavior
+	 *
+	 * This function can have 3 behaviors depending of the {@link DebounceState debounce state}
+	 *
+	 * ### `idle`
+	 *
+	 * Calling {@link exec} when the debounce is **idle** will schedule a new execution
+	 * of the callback with the specified arguments. This will transition the
+	 * {@link DebounceState debounce state} to `pending`.
+	 *
+	 * ### `pending`
+	 *
+	 * Running the {@link exec} in a `pending` state will cancel the scheduled operation
+	 * and schedule a new execution of the callback with the current arguments. This will
+	 * **not transition** the {@link DebounceState debounce state}.
+	 *
+	 * ### `running`
+	 *
+	 * When {@link exec} is called with a `running` {@link DebounceState state}, the operation
+	 * already running will be prioritized, meaning that the current {@link exec} call will not
+	 * be scheduled.
+	 *
+	 * The returned promise will be the same from the previous {@link callback} execution.
 	 *
 	 * ## Return value
 	 *
@@ -167,29 +212,67 @@ export class Debouncer<Args extends Array<unknown>, T> {
 		try {
 			return { type: 'ok', value: await this.execUnsafe(...args) };
 		} catch (err: unknown) {
-			if (err instanceof DebouncerAbortError) {
+			if (err instanceof DebounceAbortError) {
 				return { type: 'abort', value: err };
 			}
 			return { type: 'error', value: err as E };
 		}
 	}
 
-	public ready(value: T): ReadyDebounceAction {
-		if (!this.state) {
+	/**
+	 * @summary Take any pending operation and finish immediately with its return value.
+	 *
+	 * @description
+	 * Immediately finish any `scheduled` operation providing the {@link callback} return value.
+	 *
+	 * ## Ready action
+	 *
+	 * Calling {@link ready} will only take action if the {@link DebounceState debounce state}
+	 * is `scheduled`.
+	 *
+	 * In case the {@link DebounceState state} is `idle` or `running` the resulting operation will
+	 * be `noop` or `running` respectively.
+	 *
+	 * ---
+	 * @param {T} value callback return value
+	 * @returns {ReadyAction} resulting action
+	 *
+	 * ---
+	 * @example
+	 * ```
+	 * const action = debounce.ready(callbackReturnValue);
+	 * switch (action) {
+	 * 	case 'noop':
+	 * 		// there is no pending operation to debounce
+	 * 		// ...
+	 * 		break;
+	 * 	case 'running':
+	 * 		// the debounce operation is already running
+	 * 		// ...
+	 * 		break;
+	 * 	case 'resolved':
+	 * 		// the debounce operation was resolved with the provided value.
+	 * 		// ...
+	 * 		break;
+	 * }
+	 * ```
+	 */
+	public ready(value: T): ReadyAction {
+		if (!this.internals) {
 			return 'noop';
 		}
 
-		if (this.state.running) {
+		if (this.internals.running) {
 			return 'running';
 		}
 
 		/**
 		 * Clear the timeout to avoid start the callback.
 		 */
-		clearTimeout(this.state.timeoutID);
+		clearTimeout(this.internals.timeoutID);
 
 		try {
-			this.state.operation.resolve(value as Awaited<T>);
+			this.internals.operation.resolve(value as Awaited<T>);
 		} finally {
 			this.clear();
 		}
@@ -198,39 +281,61 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	}
 
 	/**
-	 * TODO: document the async flush method
 	 * @summary Flush any pending operation immediately.
 	 *
 	 * @description
-	 * this function is guaranteed to not be canceled by a DebouncerAbortError, since it
-	 * will ensure that the callback is executed.
+	 * Take any `scheduled` or `running` operation and immediately waits the {@link callback}
+	 * execution.
+	 *
+	 * This function is **guaranteed** to not be canceled by a {@link DebounceAbortError}, since it
+	 * will ensure that the {@link callback} is executed.
 	 *
 	 * ---
-	 * @returns {Promise<DebounceFlushResult<Awaited<T>, E>>} flush result
+	 * @returns {Promise<FlushResult<Awaited<T>, E>>} flush result
+	 *
+	 * ---
+	 * @example
+	 * ```
+	 * const result = await debounce.flush();
+	 * switch (result.type) {
+	 * 	case 'none':
+	 * 		// there is no operation to debounce
+	 * 		// ...
+	 * 		break;
+	 * 	case 'error':
+	 * 		// the callback has thrown an error
+	 * 		handleError(result.value);
+	 * 		break;
+	 * 	case 'ok':
+	 * 		// the callback was successfully executed.
+	 * 		handleValue(result.value);
+	 * 		break;
+	 * }
+	 * ```
 	 */
-	public async flush<E = unknown>(): Promise<DebounceFlushResult<Awaited<T>, E>> {
-		if (!this.state) {
+	public async flush<E = unknown>(): Promise<FlushResult<Awaited<T>, E>> {
+		if (!this.internals) {
 			return { type: 'none' };
 		}
 
-		if (!this.state.running) {
-			// NOTE: clear the timeout if not running. So that it's possible to await
+		if (!this.internals.running) {
+			// Clear the timeout if not running. So that it's possible to await
 			// the operationFn without being canceled.
 			// With the timeout being canceled,
-			clearTimeout(this.state.timeoutID);
+			clearTimeout(this.internals.timeoutID);
 
 			try {
 				/**
-				 * NOTE: after awaiting the operationFn, the only possible way to cancel will
+				 * After awaiting the operationFn, the only possible way to cancel will
 				 * be aborting the callback (possibly with {@link abort}), which the callback
 				 * is responsible for handling this case (even if it means throwing an error,
 				 * and resulting in a `{ type: 'error', ... }` from this function).
 				 */
-				const value = await this.state.operationFn();
-				this.state.operation.resolve(value);
+				const value = await this.internals.operationFn();
+				this.internals.operation.resolve(value);
 				return { type: 'ok', value };
 			} catch (err: unknown) {
-				this.state.operation.reject(err);
+				this.internals.operation.reject(err);
 				return { type: 'error', value: err as E };
 			} finally {
 				this.clear();
@@ -242,7 +347,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 		 * The only possible action is to await the operation promise and handle its execution.
 		 */
 		try {
-			return { type: 'ok', value: await this.state.operation.promise };
+			return { type: 'ok', value: await this.internals.operation.promise };
 		} catch (err: unknown) {
 			return { type: 'error', value: err as E };
 		} finally {
@@ -251,88 +356,143 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	}
 
 	/**
-	 * @summary Abort the debounce operation if the callback didn't started executing.
+	 * @summary Abort a scheduled debounce operation.
 	 *
 	 * @description
-	 * TODO:
+	 * Cancel any `scheduled` operation with a {@link DebounceAbortError}.
+	 *
+	 * ## Cancel action
+	 *
+	 * The operation will only be canceled if the {@link DebounceState debounce state} is `scheduled`.
+	 *
+	 * In case the {@link DebounceState state} is `idle` or `running` the resulting operation will
+	 * be `noop` or `running` respectively.
 	 *
 	 * ---
-	 * @param reason reason for aborting the debounce
-	 * @param options error options.
+	 * @param {R} [reason] - reason for aborting the debounce
+	 * @param {ErrorOptions} [options] - error options.
+	 *
+	 * ---
+	 * @example
+	 * ```
+	 * const action = debounce.cancel('aborted due user request');
+	 * switch (action) {
+	 * 	case 'noop':
+	 * 		// there is no operation to cancel.
+	 * 		// ...
+	 * 		break;
+	 * 	case 'running':
+	 * 		// the callback is already running and can not be canceled.
+	 * 		// ...
+	 * 		break;
+	 * 	case 'canceled':
+	 * 		// the scheduled operation was canceled.
+	 * 		// ...
+	 * 		break;
+	 * }
+	 * ```
 	 */
-	public cancel<R = unknown>(reason?: R, options?: ErrorOptions): CancelDebounceAction {
-		if (!this.state) {
+	public cancel<R = unknown>(reason?: R, options?: ErrorOptions): CancelAction {
+		if (!this.internals) {
 			return 'noop';
 		}
 
-		if (this.state.running) {
+		if (this.internals.running) {
 			return 'running';
 		}
 
-		// NOTE: when the callback function is not running, it's sound to assume that the timeout was not reached.
+		// When the callback function is not running, it's sound to assume that the timeout was not reached.
 		// In this case, it's correct to proceed with the following:
 		// 1. cancel the timeout
 		// 2. reject the promise with a DebouncerAbortError.
-		clearTimeout(this.state.timeoutID);
-		this.state.operation.reject(new DebouncerAbortError(reason, options));
+		clearTimeout(this.internals.timeoutID);
+		this.internals.operation.reject(new DebounceAbortError(reason, options));
 		this.clear();
 
 		return 'canceled';
 	}
 
 	/**
-	 * @summary Abort the debounce operation even if the {@link callback} is executing.
+	 * @summary Abort a scheduled or running debounce operation.
 	 *
 	 * @description
-	 * usefull with async callbacks (yields execution).
-	 * this function will call the AbortController passed into the last {@link exec} function
-	 * describe what happens if the callback fn is running xor if the delay time was not reached.
-	 * TODO:
+	 * Abort any operation that was `scheduled` or is currently `running`.
+	 *
+	 * ## Abort action
+	 *
+	 * When the {@link DebounceState debounce state} is `scheduled`, a {@link DebounceAbortError} will be thrown,
+	 * removing the callback execution from schedule. This function will return the `canceled` {@link AbortAction action}.
+	 *
+	 * If the {@link DebounceState state} is `running`, an {@link https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal AbortSignal}
+	 * from the {@link CallbackContext} will indicate that the operation was aborted. The returned {@link AbortAction action} will be `aborted`.
+	 *
+	 * With an `idle` {@link DebounceState state}, the resulting action will be `noop`.
 	 *
 	 * ---
-	 * @param reason reason for aborting the debounce
-	 * @param options error options.
+	 * @param {R} [reason] - reason for aborting the debounce
+	 * @param {ErrorOptions} [options] - error options.
+	 *
+	 * ---
+	 * @example
+	 * ```
+	 * const action = debounce.abort();
+	 * switch (action) {
+	 * 	case 'noop':
+	 * 		// there is no operation to abort.
+	 * 		// ...
+	 * 		break;
+	 * 	case 'canceled':
+	 * 		// the scheduled operation was canceled.
+	 * 		// ...
+	 * 		break;
+	 * 	case 'aborted':
+	 * 		// the running operation was aborted.
+	 * 		// ...
+	 * 		break;
+	 * }
+	 * ```
 	 */
-	public abort<R = unknown>(reason?: R, options?: ErrorOptions): AbortDebounceAction {
-		if (!this.state) {
+	public abort<R = unknown>(reason?: R, options?: ErrorOptions): AbortAction {
+		if (!this.internals) {
 			return 'noop';
 		}
 
-		if (this.state.running) {
-			// NOTE: if the callback function is running, send a abort event with the
+		if (this.internals.running) {
+			// If the callback function is running, send a abort event with the
 			// AbortSignal token and return.
-			this.state.controller.abort(reason);
+			this.internals.controller.abort(reason);
 
-			// NOTE: we must return here, since at this poiny, the callback is responsible
-			// to handle this cancellation event.
+			// The callback is responsible to handle this cancellation event. Nothing more to do.
 			return 'aborted';
 		}
 
-		// NOTE: if the callback function didn't start, it means that the timeout was not reached.
+		// If the callback function didn't start, it means that the timeout was not reached.
 		// In this case, is sound to do a "soft abort".
 		// 1. cancel the timeout
 		// 2. reject the promise with a DebouncerAbortError.
-		clearTimeout(this.state.timeoutID);
-		this.state.operation.reject(new DebouncerAbortError(reason, options));
+		clearTimeout(this.internals.timeoutID);
+		this.internals.operation.reject(new DebounceAbortError(reason, options));
 		this.clear();
 
 		return 'canceled';
 	}
 
-	public isExecuting(): boolean {
-		return this.state?.running ?? false;
+	public state(): DebounceState {
+		if (!this.internals) return 'idle';
+
+		return this.internals.running ? 'running' : 'scheduled';
 	}
 
 	private makeTimeoutFn(): () => Promise<void> {
 		return async () => {
-			if (!this.state) {
+			if (!this.internals) {
 				return;
 			}
 
 			try {
-				this.state.operation.resolve(await this.state.operationFn());
+				this.internals.operation.resolve(await this.internals.operationFn());
 			} catch (err: unknown) {
-				this.state.operation.reject(err);
+				this.internals.operation.reject(err);
 			} finally {
 				this.clear();
 			}
@@ -340,8 +500,8 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	}
 
 	private clear() {
-		this.state = null;
+		this.internals = null;
 	}
 
-	private state: DebouncerState<T> | null = null;
+	private internals: DebounceInternals<T> | null = null;
 }

@@ -1,34 +1,42 @@
-import type { OkResult, ErrorResult, None } from '@/lib';
-import type { DebouncerAbortError } from '@/AbortError';
-
-export interface DebouncerAbortResult {
-	type: 'abort';
-	value: DebouncerAbortError;
-}
-
-export type DebounceResult<T, E = unknown> = OkResult<T> | ErrorResult<E> | DebouncerAbortResult;
-
-export type DebounceFlushResult<T, E = unknown> = OkResult<T> | ErrorResult<E> | None;
+import type { OkResult, ErrorResult, None } from '@/util/Result';
+import type { DebounceAbortError } from '@/AbortError';
 
 export interface Func<This, Args extends Array<unknown>, Return> {
 	(this: This, ...args: Args): Return;
 }
 
+export interface AbortResult {
+	type: 'abort';
+	value: DebounceAbortError;
+}
+
+export type DebounceResult<T, E = unknown> = OkResult<T> | ErrorResult<E> | AbortResult;
+
+export type FlushResult<T, E = unknown> = OkResult<T> | ErrorResult<E> | None;
+
+/**
+ * TODO: document callback context
+ */
 export interface CallbackContext {
 	readonly signal: AbortSignal;
 }
 
 /**
+ * TODO: document debounce state
+ */
+export type DebounceState = 'idle' | 'scheduled' | 'running';
+
+/**
  * TODO: document ready action
  */
-export type ReadyDebounceAction = 'noop' | 'resolved' | 'running';
+export type ReadyAction = 'noop' | 'resolved' | 'running';
 
 /**
  * TODO: document cancel action
  */
-export type CancelDebounceAction = 'noop' | 'canceled' | 'running';
+export type CancelAction = 'noop' | 'canceled' | 'running';
 
 /**
  * TODO: document abort action
  */
-export type AbortDebounceAction = 'noop' | 'canceled' | 'aborted';
+export type AbortAction = 'noop' | 'canceled' | 'aborted';

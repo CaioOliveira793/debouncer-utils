@@ -1,21 +1,21 @@
 import assert from 'node:assert';
-import { DebouncerAbortError, resolveAbortError } from '@/AbortError';
+import { DebounceAbortError, resolveAbortError } from '@/AbortError';
 
-describe('AbortError > DebouncerAbortError', () => {
+describe('AbortError > DebounceAbortError', () => {
 	it('inherit from the Error type', () => {
-		const error = new DebouncerAbortError();
+		const error = new DebounceAbortError();
 
 		assert.ok(error instanceof Error);
 	});
 
 	it('describe the reason for the aborted operation', () => {
-		const error = new DebouncerAbortError('operation aborted due to server unreachable');
+		const error = new DebounceAbortError('operation aborted due to server unreachable');
 
 		assert.strictEqual(error.reason, 'operation aborted due to server unreachable');
 	});
 
 	it('create a error chain', () => {
-		const error = new DebouncerAbortError('operation aborted due to server unreachable', {
+		const error = new DebounceAbortError('operation aborted due to server unreachable', {
 			cause: new Error('tcp stream closed'),
 		});
 
@@ -25,7 +25,7 @@ describe('AbortError > DebouncerAbortError', () => {
 
 describe('AbortError > resolveAbortError', () => {
 	it('return the error when it is a DebouncerAbortError', () => {
-		const error = new DebouncerAbortError();
+		const error = new DebounceAbortError();
 
 		const abortError = resolveAbortError(error);
 
@@ -35,7 +35,7 @@ describe('AbortError > resolveAbortError', () => {
 	it('throw the error when it is not a DebouncerAbortError', () => {
 		const error = new Error('any error');
 
-		let abortError: DebouncerAbortError | void = undefined;
+		let abortError: DebounceAbortError | void = undefined;
 
 		try {
 			abortError = resolveAbortError(error);
@@ -50,13 +50,13 @@ describe('AbortError > resolveAbortError', () => {
 		{
 			let otherError: unknown | void = undefined;
 
-			const result = await Promise.reject(new DebouncerAbortError('cancel'))
+			const result = await Promise.reject(new DebounceAbortError('cancel'))
 				.catch(resolveAbortError)
 				.catch(err => {
 					otherError = err;
 				});
 
-			assert.deepStrictEqual(result, new DebouncerAbortError('cancel'));
+			assert.deepStrictEqual(result, new DebounceAbortError('cancel'));
 			assert.deepStrictEqual(otherError, undefined);
 		}
 		{

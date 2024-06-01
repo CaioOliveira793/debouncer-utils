@@ -1,4 +1,3 @@
-// TODO: document types
 // TODO: extract to other library `result-utils`
 
 export interface Some<T> {
