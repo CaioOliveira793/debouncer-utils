@@ -54,7 +54,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * Using an arrow function will prevent the *this* modification, limiting the {@link abort debounce.abort} functionality.
 	 *
 	 * ---
-	 * @param {Func<null, Args, T>} callback function to be debounced.
+	 * @param {Func<CallbackContext, Args, T>} callback function to be debounced.
 	 * @param {number} delay the debouncing delay in **milliseconds**.
 	 */
 	public constructor(callback: Func<CallbackContext, Args, T>, delay: number) {
@@ -78,11 +78,11 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 *
 	 * Calling {@link exec} when the debounce is **idle** will schedule a new execution
 	 * of the callback with the specified arguments. This will transition the
-	 * {@link DebounceState debounce state} to `pending`.
+	 * {@link DebounceState debounce state} to `scheduled`.
 	 *
-	 * ### `pending`
+	 * ### `scheduled`
 	 *
-	 * Running the {@link exec} in a `pending` state will cancel the scheduled operation
+	 * Running the {@link exec} in a `scheduled` state will cancel the scheduled operation
 	 * and schedule a new execution of the callback with the current arguments. This will
 	 * **not transition** the {@link DebounceState debounce state}.
 	 *
@@ -155,11 +155,11 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 *
 	 * Calling {@link exec} when the debounce is **idle** will schedule a new execution
 	 * of the callback with the specified arguments. This will transition the
-	 * {@link DebounceState debounce state} to `pending`.
+	 * {@link DebounceState debounce state} to `scheduled`.
 	 *
-	 * ### `pending`
+	 * ### `scheduled`
 	 *
-	 * Running the {@link exec} in a `pending` state will cancel the scheduled operation
+	 * Running the {@link exec} in a `scheduled` state will cancel the scheduled operation
 	 * and schedule a new execution of the callback with the current arguments. This will
 	 * **not transition** the {@link DebounceState debounce state}.
 	 *
@@ -220,7 +220,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	}
 
 	/**
-	 * @summary Take any pending operation and finish immediately with its return value.
+	 * @summary Take any scheduled operation and finish immediately with its return value.
 	 *
 	 * @description
 	 * Immediately finish any `scheduled` operation providing the {@link callback} return value.
@@ -243,7 +243,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	 * const action = debounce.ready(callbackReturnValue);
 	 * switch (action) {
 	 * 	case 'noop':
-	 * 		// there is no pending operation to debounce
+	 * 		// there is no scheduled operation to debounce
 	 * 		// ...
 	 * 		break;
 	 * 	case 'running':
@@ -281,7 +281,7 @@ export class Debouncer<Args extends Array<unknown>, T> {
 	}
 
 	/**
-	 * @summary Flush any pending operation immediately.
+	 * @summary Flush any scheduled operation immediately.
 	 *
 	 * @description
 	 * Take any `scheduled` or `running` operation and immediately waits the {@link callback}
@@ -503,5 +503,10 @@ export class Debouncer<Args extends Array<unknown>, T> {
 		this.internals = null;
 	}
 
+	/**
+	 * Debouncer internals
+	 *
+	 * @internal
+	 */
 	private internals: DebounceInternals<T> | null = null;
 }

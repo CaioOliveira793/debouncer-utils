@@ -34,7 +34,8 @@
 		"check": "run-z check:type,check:lint",
 		"build:js": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
 		"build:type": "dts-bundle-generator src/lib.ts --no-check --out-file 'dist/lib-type.d.ts'",
-		"build": "run-z clear:build build:js,build:type",
+		"build:doc": "typedoc --name debouncer-utils",
+		"build": "run-z clear:build build:js,build:type build:doc",
 		"test": "jest",
 		"clear:build": "rimraf dist",
 		"clear:coverage": "rimraf coverage",
@@ -57,6 +58,8 @@
 		"run-z": "^1.11.1",
 		"ts-jest": "^29.1.2",
 		"ts-node": "^10.9.2",
+		"typedoc": "^0.25.13",
+		"typedoc-plugin-markdown": "^4.0.3",
 		"typescript": "^5.4.5"
 	},
 	"packageManager": "pnpm@9.1.2+sha256.19c17528f9ca20bd442e4ca42f00f1b9808a9cb419383cd04ba32ef19322aba7"

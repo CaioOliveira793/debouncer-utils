@@ -1,0 +1,14 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src/lib.ts"],
+	"plugin": ["typedoc-plugin-markdown"],
+	"validation": {
+		"notExported": true,
+		"invalidLink": true,
+		"notDocumented": false
+	},
+	"readme": "none",
+	"outputFileStrategy": "members",
+	"flattenOutputFiles": false,
+	"out": "docs"
+}
