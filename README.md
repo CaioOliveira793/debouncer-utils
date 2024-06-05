@@ -1,6 +1,6 @@
 # Debouncer utils
 
-Operation debounce utility
+Operation debouncer utility
 
 ## Features
 
@@ -12,25 +12,33 @@ Operation debounce utility
 
 ## Usage
 
-<!-- TODO: add documentation (JSDoc & readme) -->
+Check out the [API docs](./docs/README.md) for more detailed information.
 
 ### Return values
 
+The debounce return value can be reached by waiting the promise.
+
 ```ts
-const value = await debounce.exec(arg1, arg2);
+const result = await debounce.exec(arg1, arg2);
+if (result.type === 'ok') {
+	handleValue(result.value);
+}
 ```
 
 ### Promises
+
+Async debounce functions are also supported.
 
 ```ts
 const debounce = new Debouncer(async () => 'success', 1_000);
 
 // after 1 second ...
-const value = await debounce.exec();
+const result = await debounce.exec();
 
-assert.strictEqual(value, 'success');
+assert.strictEqual(result, { ok: 'ok', value: 'success' });
 ```
 
+Also supports all the async utilities.
 
 ```ts
 const debounce = new Debouncer(async () => 'first', 1_500);
@@ -38,19 +46,29 @@ const debounce = new Debouncer(async () => 'first', 1_500);
 // after 1.5 seconds ...
 const values = await Promise.all(debounce.exec(), Promise.resolve('second'));
 
-assert.strictEqual(values, ['first', 'second']);
+assert.strictEqual(values, [{ type: 'ok', value: 'first' }, 'second']);
 ```
 
 ### Cancelation
 
-```ts
-const value = await debounce.execSafeAbort(arg1, arg2);
+Cancelation can be triggered and handled safely.
 
-// Abort pending operation
-debounce.abort();
+```ts
+const value = await debounce.exec(arg1, arg2);
+
+// cancelExecution() ...
+
+assert.strictEqual(result, { ok: 'abort', value: new DebounceAbortError() });
+
+function cancelExecution() {
+	// Abort pending operation
+	debounce.abort();
+}
 ```
 
 ### Debounce operation control
+
+In case the return value is already available, its possible to skip the debounce execution.
 
 ```ts
 async function func() {
@@ -59,6 +77,8 @@ async function func() {
 
 debounce.ready(value);
 ```
+
+Instead of waiting the delay timeout, run the debounce immediately with `flush`.
 
 ```ts
 async function func() {
