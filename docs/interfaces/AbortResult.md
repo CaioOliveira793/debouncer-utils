@@ -14,7 +14,7 @@
 
 #### Source
 
-[src/Type.ts:9](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Type.ts#L9)
+[src/Type.ts:9](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Type.ts#L9)
 
 ***
 
@@ -24,4 +24,4 @@
 
 #### Source
 
-[src/Type.ts:10](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Type.ts#L10)
+[src/Type.ts:10](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Type.ts#L10)

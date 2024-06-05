@@ -42,4 +42,4 @@ executing (either successfully or until cancelled) the state is transitioned to 
 
 ## Source
 
-[src/Type.ts:67](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Type.ts#L67)
+[src/Type.ts:67](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Type.ts#L67)

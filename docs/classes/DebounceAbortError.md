@@ -36,7 +36,7 @@
 
 #### Source
 
-[src/AbortError.ts:4](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/AbortError.ts#L4)
+[src/AbortError.ts:4](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/AbortError.ts#L4)
 
 ## Properties
 
@@ -88,7 +88,7 @@ node\_modules/.pnpm/typescript@5.4.5/node\_modules/typescript/lib/lib.es5.d.ts:1
 
 #### Source
 
-[src/AbortError.ts:2](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/AbortError.ts#L2)
+[src/AbortError.ts:2](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/AbortError.ts#L2)
 
 ***
 

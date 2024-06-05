@@ -68,7 +68,7 @@ Using an arrow function will prevent the *this* modification, limiting the [debo
 
 #### Source
 
-[src/Debouncer.ts:60](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L60)
+[src/Debouncer.ts:60](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L60)
 
 ## Properties
 
@@ -82,7 +82,7 @@ Callback function.
 
 #### Source
 
-[src/Debouncer.ts:22](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L22)
+[src/Debouncer.ts:22](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L22)
 
 ***
 
@@ -96,7 +96,7 @@ Debouncer delay in milliseconds.
 
 #### Source
 
-[src/Debouncer.ts:18](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L18)
+[src/Debouncer.ts:18](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L18)
 
 ## Methods
 
@@ -166,7 +166,7 @@ switch (action) {
 
 #### Source
 
-[src/Debouncer.ts:455](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L455)
+[src/Debouncer.ts:455](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L455)
 
 ***
 
@@ -233,7 +233,7 @@ switch (action) {
 
 #### Source
 
-[src/Debouncer.ts:395](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L395)
+[src/Debouncer.ts:395](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L395)
 
 ***
 
@@ -247,7 +247,7 @@ switch (action) {
 
 #### Source
 
-[src/Debouncer.ts:502](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L502)
+[src/Debouncer.ts:502](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L502)
 
 ***
 
@@ -346,7 +346,7 @@ switch (result.type) {
 
 #### Source
 
-[src/Debouncer.ts:211](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L211)
+[src/Debouncer.ts:211](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L211)
 
 ***
 
@@ -432,7 +432,7 @@ try {
 
 #### Source
 
-[src/Debouncer.ts:122](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L122)
+[src/Debouncer.ts:122](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L122)
 
 ***
 
@@ -488,7 +488,7 @@ switch (result.type) {
 
 #### Source
 
-[src/Debouncer.ts:316](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L316)
+[src/Debouncer.ts:316](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L316)
 
 ***
 
@@ -506,7 +506,7 @@ switch (result.type) {
 
 #### Source
 
-[src/Debouncer.ts:486](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L486)
+[src/Debouncer.ts:486](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L486)
 
 ***
 
@@ -568,7 +568,7 @@ switch (action) {
 
 #### Source
 
-[src/Debouncer.ts:260](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L260)
+[src/Debouncer.ts:260](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L260)
 
 ***
 
@@ -582,4 +582,4 @@ switch (action) {
 
 #### Source
 
-[src/Debouncer.ts:480](https://github.com/CaioOliveira793/debouncer-utils/blob/0e92308b2a5ad95ff3e77bc26245f15699f57079/src/Debouncer.ts#L480)
+[src/Debouncer.ts:480](https://github.com/CaioOliveira793/debouncer-utils/blob/v0.2.0/src/Debouncer.ts#L480)
