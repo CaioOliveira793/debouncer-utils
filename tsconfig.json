@@ -47,6 +47,13 @@
 		"downlevelIteration": false,
 		"skipLibCheck": true
 	},
-	"include": ["src/**/*", "test/**/*", "rollup.config.ts", "jest.config.ts"],
-	"exclude": ["node_modules/**", "dist/**", "coverage/**"]
+	"include": ["src/**/*", "test/**/*", "script/**/*", "rollup.config.ts", "jest.config.ts"],
+	"exclude": ["node_modules/**", "dist/**", "coverage/**"],
+	"ts-node": {
+		"esm": true,
+		"files": true,
+		"transpileOnly": true,
+		"experimentalResolver": true,
+		"experimentalSpecifierResolution": "node"
+	}
 }

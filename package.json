@@ -35,8 +35,9 @@
 		"build:js": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
 		"build:type": "dts-bundle-generator src/lib.ts --no-check --out-file 'dist/lib-type.d.ts'",
 		"build:doc": "typedoc --name debouncer-utils",
-		"build": "run-z clear:build build:js,build:type build:doc",
+		"build": "run-z clear:build build:js,build:type,build:doc",
 		"test": "jest",
+		"pkg:update-version": "node --no-warnings=ExperimentalWarning --loader ts-node/esm script/update-version.ts",
 		"clear:build": "rimraf dist",
 		"clear:coverage": "rimraf coverage",
 		"clear": "rimraf dist coverage"
